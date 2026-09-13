@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Band Key 订阅方案</title>
+<style>
+  :root{
+    --teal:#1f6b50; --green:#2f7d5f; --mint:#b9e5cd; --dark:#12231f;
+    --bg:#f4f8f6; --card:#fff; --line:#e3e8e6; --txt:#1a2b2a; --mut:#5c7c79;
+    --warn:#8a5510;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--txt);line-height:1.6}
+  header{background:linear-gradient(135deg,#12231f 0%,#1f6b50 100%);color:#fff;padding:34px 24px 28px}
+  header .wrap{max-width:960px;margin:0 auto}
+  header h1{margin:0 0 6px;font-size:26px}
+  header p{margin:0;opacity:.85;font-size:14px}
+  .hero-badge{display:inline-block;margin-top:10px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);padding:4px 12px;border-radius:20px;font-size:12px}
+  .wrap{max-width:960px;margin:0 auto;padding:22px 24px 60px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-top:16px;box-shadow:0 1px 3px rgba(18,35,31,.04)}
+  h2{font-size:18px;margin:4px 0 8px;display:flex;align-items:center;gap:8px}
+  h2 .step{background:var(--teal);color:#fff;width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 auto}
+  h3{font-size:15px;margin:16px 0 6px;color:var(--dark)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  th,td{text-align:left;border-bottom:1px solid var(--line);padding:7px 8px;vertical-align:top}
+  th{background:#eef5f1;font-weight:600;color:var(--teal)}
+  .tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;white-space:nowrap}
+  .tag.free{background:#eef2f1;color:#556}
+  .tag.pro{background:#d6efe2;color:var(--teal)}
+  .tag.opt{background:#f6ecc9;color:#8a6d1a}
+  ul{font-size:13.5px;margin:4px 0;padding-left:20px}
+  li{margin:3px 0}
+  .note{background:#f0f7f3;border-left:3px solid var(--green);padding:8px 12px;border-radius:0 6px 6px 0;font-size:12.5px;color:var(--mut);margin-top:10px}
+  .warn{background:#fff7ed;border-left:3px solid #d97706;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12.5px;color:var(--warn);margin-top:10px}
+  code{background:#eef5f1;padding:1px 6px;border-radius:4px;font-size:12px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  footer{margin-top:28px;font-size:12px;color:var(--mut);text-align:center}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>Band Key · App 内订阅方案</h1>
+  <p>免费版 + 高级订阅 · 无后端架构下的 IAP 接入与上架配置 · iOS App Store</p>
+  <span class="hero-badge">Bundle ID com.bandkey.app · 建议首发免费，1.1 引入订阅</span>
+</div></header>
+
+<div class="wrap">
+
+<div class="card">
+<h2><span class="step">1</span>订阅策略总览</h2>
+<p style="font-size:13.5px">Band Key 是本地优先、无后端的应用（数据存本地设备）。推荐 <b>Freemium</b> 模式：核心功能免费，高级功能订阅解锁。所有校验在设备本地完成（StoreKit 2），不依赖自建服务器。</p>
+<table>
+<tr><th>功能</th><th>免费版</th><th>高级版（订阅）</th></tr>
+<tr><td>和弦检测 / 常用调号（C G D A E F B♭）</td><td><span class="tag free">可用</span></td><td><span class="tag pro">可用</span></td></tr>
+<tr><td>全部 12 个调号 + 自定义调式</td><td><span class="tag free">仅常用</span></td><td><span class="tag pro">全部</span></td></tr>
+<tr><td>乐队模式（蓝牙 / 局域网连接，≤4 人）</td><td><span class="tag free">限时体验</span><br><span style="font-size:12px;color:var(--mut)">如单次 10 分钟</span></td><td><span class="tag pro">无限使用</span></td></tr>
+<tr><td>和弦 / 谱面导出（图片、PDF）</td><td><span class="tag free">带水印</span></td><td><span class="tag pro">无水印</span></td></tr>
+<tr><td>收藏夹、自定义进行</td><td><span class="tag free">有限条数</span></td><td><span class="tag pro">无限制</span></td></tr>
+<tr><td>未来功能（云端曲库、更多乐器等）</td><td><span class="tag free">—</span></td><td><span class="tag pro">优先解锁</span></td></tr>
+</table>
+<div class="note">原则：<b>检测与演奏核心功能永远免费</b>，只对「乐队协作时长 / 导出无水印 / 全调式」等进阶能力收费，避免核心体验被付费墙伤害。</div>
+</div>
+
+<div class="card">
+<h2><span class="step">2</span>价格档位建议</h2>
+<table>
+<tr><th>商品</th><th>类型</th><th>建议价格（人民币）</th><th>建议价格（美元）</th><th>说明</th></tr>
+<tr><td>BandKey Monthly<br>月度订阅</td><td>自动续期订阅</td><td>¥18 / 月</td><td>$2.99 / 月</td><td>低门槛尝鲜</td></tr>
+<tr><td>BandKey Yearly<br>年度订阅</td><td>自动续期订阅</td><td>¥98 / 年</td><td>$19.99 / 年</td><td><b>主推</b>（约 55 折，首页标「最划算」）</td></tr>
+<tr><td>BandKey Lifetime<br>终身买断</td><td>非消耗型（Non-Consumable）</td><td>¥198 一次性</td><td>$29.99 一次性</td><td>可选，高黏性用户直接升级</td></tr>
+</table>
+<ul>
+  <li><b>免费试用</b>：年度订阅首 7 天免费试用（Introductory Offer），转化率最佳实践</li>
+  <li><b>首年优惠</b>（可选）：首年 8 折的 Introductory Price，次年起原价续订</li>
+  <li><b>苹果分成</b>：小企业计划（年收入 &lt; 100 万美元）苹果抽成 15%；普通计划订阅第 1 年 30%、第 2 年起 15%</li>
+  <li><b>税务</b>：订阅价格默认含税，由苹果代收代缴（App 内购买为苹果 DDA，无需开发者处理）</li>
+</ul>
+<div class="warn">上线后若调整价格，苹果要求：涨价需用户主动确认；老订阅者通常维持原价（App Store 会提示）。价格点建议参考苹果「价格矩阵」按档位选择，避免手动输入产生定价失真。</div>
+</div>
+
+<div class="card">
+<h2><span class="step">3</span>App Store Connect 配置步骤</h2>
+<h3>3.1 创建订阅群组（Subscription Group）</h3>
+<ul>
+  <li>App Store Connect → <b>App 内购买项目</b> → <b>订阅</b> → 新建群组 <code>BandKey Premium</code>（订阅组内的商品互斥，用户只能订一个）</li>
+</ul>
+<h3>3.2 创建订阅商品</h3>
+<ul>
+  <li>群组内新建：<code>bandkey.monthly</code>（月）、<code>bandkey.yearly</code>（年）</li>
+  <li>每个商品填写：显示名称（Band Key 月度 / Band Key 年度）、本地化描述、价格点、审核截图（订阅条款页截图）</li>
+  <li>终身买断放 <b>非消耗型 App 内购买项目</b>：<code>bandkey.lifetime</code>，与订阅分开</li>
+</ul>
+<h3>3.3 本地化</h3>
+<ul>
+  <li>至少提供 <b>简体中文</b> 与 <b>英文</b> 两套名称/描述（与应用商店本地化一致）</li>
+</ul>
+<h3>3.4 订阅优惠（可选）</h3>
+<ul>
+  <li>免费试用：7 天（仅年付开放，月付不开放，避免快速取消循环）</li>
+  <li>优惠码 / 首年折扣：上线后从后台按需发放</li>
+</ul>
+<h3>3.5 审核所需材料</h3>
+<ul>
+  <li>订阅条款与说明截图（含价格、周期、续订规则）</li>
+  <li>App 内购买项目的审核截图（显示订阅入口与价格）</li>
+</ul>
+<div class="note">说明：所有 App 内购买项目都需在「App 内购买项目」管理页提交审核，且需有<b>审核沙盒账号</b>可测试流程；配置完成后要等苹果审核通过，订阅商品才可销售。</div>
+</div>
+
+<div class="card">
+<h2><span class="step">4</span>技术接入方案（无后端）</h2>
+<p style="font-size:13.5px">Band Key 无后端，订阅状态必须<b>在设备本地完成验证</b>。Capacitor 8 / iOS 15+ 下两条可行路线：</p>
+<table>
+<tr><th>方案</th><th>方式</th><th>优点</th><th>代价</th><th>推荐度</th></tr>
+<tr>
+  <td><b>A. StoreKit 2 原生桥接</b></td>
+  <td>写一个 Swift 原生插件（Capacitor 自定义 Plugin），用 <code>Transaction.currentEntitlements</code> + <code>AppTransaction</code> 本地验证订阅</td>
+  <td>零第三方依赖、零服务费、苹果签名验证最安全、完全可控</td>
+  <td>需要写 Swift 桥接代码（约 200-300 行）；跨设备同步需用户手动恢复购买</td>
+  <td><span class="tag pro">首选</span></td>
+</tr>
+<tr>
+  <td><b>B. RevenueCat（官方 Capacitor 插件）</b></td>
+  <td>接入 <code>@revenuecat/purchases-capacitor</code>，由 RevenueCat 托管价格/优惠/状态</td>
+  <td>几乎不写原生代码；试用/优惠/恢复开箱即用；跨设备自动同步；后台可视化</td>
+  <td>引入第三方 SDK 与账号；免费层限 1 万月活用户；依赖其服务可用性</td>
+  <td><span class="tag opt">备选</span></td>
+</tr>
+</table>
+<h3>方案 A 关键实现点</h3>
+<ul>
+  <li>Capacitor 自定义插件暴露方法：<code>getEntitlements()</code>、<code>purchase(productId)</code>、<code>restore()</code>、<code>listenForUpdates()</code></li>
+  <li>用 <code>Product.PurchaseOption</code> 发起购买；<code>Transaction.updates</code> 监听续订/退款事件</li>
+  <li>解锁判断：<code>Transaction.currentEntitlements</code> 中存在对应 productId 且 <code>expirationDate</code> 未过期</li>
+  <li>本地持久化：订阅状态缓存到 <code>UserDefaults</code>，启动时快速判断 UI，后台再异步刷新</li>
+  <li>前端（www）通过 <code>window.__cbApi</code> 或 Capacitor 事件总线对接，无需改动现有原型逻辑</li>
+</ul>
+<div class="warn">无论哪条路线，<b>前端 UI 只是展示层</b>：真正的解锁校验必须落在原生 Swift 侧（本地验证 entitlement），防止被篡改。</div>
+</div>
+
+<div class="card">
+<h2><span class="step">5</span>合规与审核要点</h2>
+<ul>
+  <li><b>恢复购买</b>：设置页必须提供「恢复购买」按钮，调用 <code>restore()</code>（苹果强审项）</li>
+  <li><b>订阅条款</b>：购买页需展示价格、周期、续订与取消规则（苹果强制）</li>
+  <li><b>试用说明</b>：若有免费试用，需明示试用结束后的收费方式与取消路径</li>
+  <li><b>隐私</b>：订阅购买信息属敏感数据；隐私政策需补充订阅/购买数据说明（可在现有 privacy-policy.html 增补一节）</li>
+  <li><b>App 内购买项目能力</b>：需在 iOS 工程 Signing &amp; Capabilities 添加 <b>In-App Purchase</b> capability，并确保 Provisioning Profile 含该能力（需在开发者后台更新 profile）</li>
+  <li><b>审核演示</b>：审核员需能在沙盒环境走通 订阅→解锁→恢复 全流程，建议在文档里附测试账号说明</li>
+</ul>
+</div>
+
+<div class="card">
+<h2><span class="step">6</span>实施节奏建议</h2>
+<table>
+<tr><th>版本</th><th>内容</th><th>目的</th></tr>
+<tr><td>1.0（现在）</td><td>纯免费上架，不带 IAP</td><td>首版审核最快通过、收集真实用户反馈、积累评分</td></tr>
+<tr><td>1.1（上线后 2-4 周）</td><td>接入 StoreKit 2 桥接 + 订阅商品 + 高级功能开关</td><td>基于真实使用数据划分付费点，风险最低</td></tr>
+<tr><td>1.2+</td><td>年度主推 + 终身买断 + 试用优惠</td><td>阶梯变现，拉高 ARPU</td></tr>
+</table>
+<div class="note">理由：先验证「核心价值成立」（有人长期用），再谈收费；避免首版因 IAP 审核流程拖慢上线。</div>
+</div>
+
+<footer>Band Key · 订阅方案 v1.0 · 2026-09-14</footer>
+</div>
+</body>
+</html>

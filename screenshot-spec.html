@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Band Key · App 预览截图规格</title>
+<style>
+  body{margin:0;background:#f4f8f6;color:#1a2b2a;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7}
+  .wrap{max-width:820px;margin:0 auto;padding:26px 22px 70px}
+  h1{font-size:22px}
+  h2{font-size:16px;border-left:4px solid #1f6b50;padding-left:10px;margin-top:30px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  th,td{border:1px solid #e3e8e6;padding:7px 9px;text-align:left}
+  th{background:#e6f4ec;color:#1f6b50}
+  .card{background:#fff;border:1px solid #e3e8e6;border-radius:10px;padding:14px 18px;margin-top:12px}
+  .shot{background:#f2f7f4;border:1px dashed #9cc7b4;border-radius:8px;padding:10px 12px;margin:8px 0;font-size:13px}
+</style>
+</head>
+<body><div class="wrap">
+<h1>Band Key · App 预览截图规格</h1>
+<p style="color:#5c7c79">截图须为应用真实界面（非 AI 生成）。以下为各平台必须提交的尺寸与建议展示的画面。你可在装好 Band Key 的模拟器/真机上按建议画面截图；规格满足即可通过审核。</p>
+
+<h2>iOS（App Store，最多 10 张/设备）</h2>
+<div class="card"><table>
+<tr><th>设备/比例</th><th>推荐像素</th><th>建议展示画面</th></tr>
+<tr><td>iPhone 6.7″</td><td>1290×2796</td><td>主界面和弦反查 + 调号</td></tr>
+<tr><td>iPhone 6.5″</td><td>1242×2688</td><td>演奏浮窗跟随和弦</td></tr>
+<tr><td>iPhone 5.5″</td><td>1242×2208</td><td>和弦槽位 / 导出参考</td></tr>
+<tr><td>iPad Pro 12.9″</td><td>2048×2732</td><td>乐队模式 / 多和弦网格</td></tr>
+</table></div>
+<div class="card" style="font-size:13px">
+<b>建议的画面序列（4-6 张）：</b>
+<div class="shot">1. 主界面反查：搜索框 + 显示和弦名/级数/音名/简谱/钢琴高亮</div>
+<div class="shot">2. 演奏浮窗：悬浮琴键 + 当前和弦 + 下一行预览 +「下一行」按钮</div>
+<div class="shot">3. 调号移调：调号下拉，展示 C→G 变化、级数/简谱同步</div>
+<div class="shot">4. 乐队模式：设备扫描/已连接、同步中的调号大卡片</div>
+<div class="shot">5. 导出参考：2×2 和弦卡片 + 音阶条（跟随调号）</div>
+</div>
+
+<h2>Android（Google Play）</h2>
+<div class="card"><table>
+<tr><th>设备</th><th>推荐像素</th><th>说明</th></tr>
+<tr><td>Phone</td><td>1080×1920 或以上（2:1 内）</td><td>至少 2 张：主界面 + 演奏浮窗</td></tr>
+<tr><td>7″/10″ 平板</td><td>≥1200×800</td><td>可选 1-2 张</td></tr>
+</table>
+<div style="font-size:13px;margin-top:8px">可用「明细/低清几项」：推荐 2 张手机竖屏（主界面、浮窗）+ 1 张平板，展示「移调」或「乐队」。</div>
+</div>
+
+<h2>截图工具提示</h2>
+<div class="card" style="font-size:13px">
+<ul>
+<li>真机：iPhone 用「⌘S」或主页键+锁屏键；模拟器用「⌘R 记录屏幕/⌘S 截图」。</li>
+<li>Android：<code>adb exec-out screencap -p > shot.png</code> 或模拟器截图按钮。</li>
+<li>确保应用为最终 UI（与 <code>www/index.html</code> 一致），语言可按上架国家设置。</li>
+<li>截图也可加品牌配色边框/文字说明，但主体必须是真实界面。</li>
+</ul>
+</div>
+</div></body></html>
