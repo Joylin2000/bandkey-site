@@ -2083,6 +2083,8 @@
     .fk-fret .fb-row:not(:last-child) { border-bottom: none; }
     .fk-fret .fb-head { border-bottom: none; }
     .fk-fret .fb-mark { width: 5px; height: 5px; }
+    .fk-fret .fb-mutedx { font-size: 6px; }
+    .fk-fret .fb-dot { width: 60%; height: 60%; }
     .play-float__pagedots {
       display: none;
       align-items: center;
@@ -5530,19 +5532,32 @@
         html += `<div class="fb-fretno">${f === 0 ? '0' : f}</div>`;
       }
       html += '</div>';
-      strings.forEach(s => {
+      // 单音干净和弦图型：每根弦只取最近的和弦音，低音弦优先根音
+      const shape = strings.map((s, si) => {
+        if (rootPc >= 0 && si >= strings.length - 2) {
+          for (let f = 0; f < FRET_COUNT; f++) {
+            if ((s.open + f) % 12 === rootPc) return f;
+          }
+        }
+        for (let f = 0; f < FRET_COUNT; f++) {
+          if (pcSet.has((s.open + f) % 12)) return f;
+        }
+        return -1;
+      });
+      strings.forEach((s, si) => {
+        const wantFret = shape[si];
         html += `<div class="fb-row"><div class="fb-strandname">${s.label}</div>`;
         for (let f = 0; f < FRET_COUNT; f++) {
           const midi = s.open + f;
           const pc = midi % 12;
-          const inChord = pcSet.has(pc);
           const isRoot = pc === rootPc;
-          const isMark = (f === 3 || f === 5) && !inChord;
-          html += `<div class="fb-fret${f === 0 ? ' fb-nut' : ''}" data-midi="${midi}" data-fret="${f}">`;
-          if (inChord) {
+          const muted = wantFret < 0 && f === 0;
+          const dot = (wantFret === f);
+          html += `<div class="fb-fret${f === 0 ? ' fb-nut' : ''}${muted ? ' fb-muted' : ''}" data-midi="${midi}" data-fret="${f}">`;
+          if (muted) {
+            html += '<span class="fb-mutedx">×</span>';
+          } else if (dot) {
             html += `<div class="fb-dot${isRoot ? ' fb-root' : ''}"></div>`;
-          } else if (isMark) {
-            html += '<div class="fb-mark"></div>';
           }
           html += '</div>';
         }
