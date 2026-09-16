@@ -2823,6 +2823,15 @@
     body.dark .fb-fret { border-color: #d8dde3; }
     body.dark .fb-fret:hover { background: rgba(255,255,255,0.10); }
     body.dark .fb-mark { background: #0f0d0b; }
+    /* 和弦图型：无和弦音的哑音弦显示 × */
+    .fb-muted .fb-mutedx {
+      color: #a4764d;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.25);
+    }
+    body.dark .fb-muted .fb-mutedx { color: #c9a06b; }
 
     /* ===== 全屏适配覆盖：解除手机外壳 + 原型控制面板包装 ===== */
     body,
@@ -4077,19 +4086,33 @@
         html += `<div class="fb-fretno">${f === 0 ? '0' : f}</div>`;
       }
       html += '</div>';
-      strings.forEach(s => {
+      // 合成干净和弦图型：每根弦只取最近的一个和弦音（单指法图），去掉满板重复音与定位黑点
+      const shape = strings.map((s, si) => {
+        // 低音两根弦优先让根音作低音，更像标准指法
+        if (rootIdx >= 0 && si >= strings.length - 2) {
+          for (let f = 0; f < FRET_COUNT; f++) {
+            if ((s.open + f) % 12 === rootIdx) return f;
+          }
+        }
+        for (let f = 0; f < FRET_COUNT; f++) {
+          if (pcSet.has((s.open + f) % 12)) return f;
+        }
+        return -1;
+      });
+      strings.forEach((s, si) => {
+        const wantFret = shape[si];
         html += `<div class="fb-row"><div class="fb-strandname">${s.label}</div>`;
         for (let f = 0; f < FRET_COUNT; f++) {
           const midi = s.open + f;
           const pc = midi % 12;
-          const inChord = pcSet.has(pc);
-          const isRoot = pc === rootIdx;
-          const isMark = (f === 3 || f === 5) && !inChord;
-          html += `<div class="fb-fret${f === 0 ? ' fb-nut' : ''}" data-midi="${midi}" data-fret="${f}">`;
-          if (inChord) {
+          const isRoot = (rootIdx >= 0) && pc === rootIdx;
+          const muted = wantFret < 0 && f === 0;
+          const dot = (wantFret === f);
+          html += `<div class="fb-fret${f === 0 ? ' fb-nut' : ''}${muted ? ' fb-muted' : ''}" data-midi="${midi}" data-fret="${f}">`;
+          if (muted) {
+            html += '<span class="fb-mutedx">×</span>';
+          } else if (dot) {
             html += `<div class="fb-dot${isRoot ? ' fb-root' : ''}">${showLabels ? `<span>${fretLabelFor(pc)}</span>` : ''}</div>`;
-          } else if (isMark) {
-            html += '<div class="fb-mark"></div>';
           }
           html += '</div>';
         }
@@ -6238,4 +6261,3 @@
 </html>
 
 <script src="conn.js"></script>
-<script src="sync-boot.js"></script>
