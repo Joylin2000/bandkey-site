@@ -4069,6 +4069,60 @@
       return showJianpu ? jianpuMap[pc] : noteNames[pc];
     }
 
+    // 标准按法生成器：一次只算一个紧凑、真实可弹的单把位指法。
+    // 规则：优先取“最低音即根音/转位低音”的最低位把位（开放和弦优先），其内再挑品格最紧、垫弦最多的指法。
+    function stdChordShape(strings, pcSet, rootPc, bassPcHint) {
+      const order = strings.slice().reverse(); // 低→高
+      const maxFret = FRET_COUNT - 1;
+      const W = Math.min(3, maxFret);
+      const bassRef = bassPcHint >= 0 ? bassPcHint : rootPc;
+      let globalBest = null, globalScore = -Infinity;
+      for (let pos = 0; pos <= maxFret; pos++) {
+        const opts = order.map(s => {
+          const cands = [];
+          if (pcSet.has(s.open % 12)) cands.push({ f: 0, open: true });
+          for (let f = Math.max(1, pos); f <= Math.min(pos + W, maxFret); f++) {
+            if (pcSet.has((s.open + f) % 12)) cands.push({ f, open: false });
+          }
+          cands.push({ f: -1, open: false });
+          return cands;
+        });
+        const frets = new Array(order.length).fill(0);
+        let posBest = null, posScore = -Infinity, posHasBass = false;
+        (function rec(i) {
+          if (i === order.length) {
+            const played = [];
+            for (let k = 0; k < order.length; k++) if (frets[k] >= 0) played.push({ k, f: frets[k] });
+            if (played.length < 3) return;
+            const bass = played[0].k;
+            const bassPc = (order[bass].open + frets[bass]) % 12;
+            const hasBass = bassRef >= 0 && bassPc === bassRef;
+            let score = 0;
+            if (hasBass) score += 1200;
+            score += played.length * 220;
+            score -= (order.length - played.length) * 170;
+            let lo = Infinity, hi = -Infinity;
+            for (const p of played) if (p.f > 0) { if (p.f < lo) lo = p.f; if (p.f > hi) hi = p.f; }
+            score -= (isFinite(lo) && isFinite(hi) && lo <= hi ? hi - lo : 0) * 14;
+            for (const p of played) if (p.f === 0) score += 22;
+            if (hasBass && score > posScore) { posScore = score; posBest = frets.slice(); posHasBass = true; }
+            if (score > globalScore) { globalScore = score; globalBest = frets.slice(); }
+            return;
+          }
+          for (const c of opts[i]) { frets[i] = c.f; rec(i + 1); }
+        })(0);
+        // 找到能实现“根音/低音”的最低把位，立即采用，保证 A/Am/C/D 走开放位
+        if (posHasBass) {
+          const out = new Array(order.length);
+          for (let k = 0; k < order.length; k++) out[order.length - 1 - k] = posBest ? posBest[k] : -1;
+          return out;
+        }
+      }
+      const out = new Array(order.length);
+      for (let k = 0; k < order.length; k++) out[order.length - 1 - k] = globalBest ? globalBest[k] : -1;
+      return out; // 与 strings（渲染顺序）对齐
+    }
+
     function buildFretboard() {
       const piano = document.getElementById('piano');
       const container = piano.closest('.piano-container');
@@ -4076,31 +4130,22 @@
       const strings = FRETBOARD_STRINGS[instrument] || FRETBOARD_STRINGS.bass;
       let pcSet = new Set();
       let rootIdx = -1;
+      let bassPcHint = -1;
       if (isDetectMode) {
         pcSet = new Set(detectedNotes.map(n => n % 12));
       } else {
         const { notes, chord } = getChordMidiNotes(currentChord, currentInversion);
         pcSet = new Set(notes.map(n => n % 12));
         rootIdx = chord.rootOffset || 0;
+        bassPcHint = notes[0] % 12; // 转位后最低音作为低音约束
       }
       let html = '<div class="fretboard"><div class="fb-head"><div class="fb-corner"></div>';
       for (let f = 0; f < FRET_COUNT; f++) {
         html += `<div class="fb-fretno">${f === 0 ? '0' : f}</div>`;
       }
       html += '</div>';
-      // 合成干净和弦图型：每根弦只取最近的一个和弦音（单指法图），去掉满板重复音与定位黑点
-      const shape = strings.map((s, si) => {
-        // 低音两根弦优先让根音作低音，更像标准指法
-        if (rootIdx >= 0 && si >= strings.length - 2) {
-          for (let f = 0; f < FRET_COUNT; f++) {
-            if ((s.open + f) % 12 === rootIdx) return f;
-          }
-        }
-        for (let f = 0; f < FRET_COUNT; f++) {
-          if (pcSet.has((s.open + f) % 12)) return f;
-        }
-        return -1;
-      });
+      // 常规按法：一次只出现一个紧凑可弹的和弦指法图，去掉满板重复音与定位黑点
+      const shape = stdChordShape(strings, pcSet, rootIdx, bassPcHint);
       strings.forEach((s, si) => {
         const wantFret = shape[si];
         html += `<div class="fb-row"><div class="fb-strandname">${s.label}</div>`;
@@ -5532,18 +5577,8 @@
         html += `<div class="fb-fretno">${f === 0 ? '0' : f}</div>`;
       }
       html += '</div>';
-      // 单音干净和弦图型：每根弦只取最近的和弦音，低音弦优先根音
-      const shape = strings.map((s, si) => {
-        if (rootPc >= 0 && si >= strings.length - 2) {
-          for (let f = 0; f < FRET_COUNT; f++) {
-            if ((s.open + f) % 12 === rootPc) return f;
-          }
-        }
-        for (let f = 0; f < FRET_COUNT; f++) {
-          if (pcSet.has((s.open + f) % 12)) return f;
-        }
-        return -1;
-      });
+      // 常规按法：一次只出现一个紧凑可弹的和弦指法图
+      const shape = stdChordShape(strings, pcSet, rootPc, rootPc >= 0 ? rootPc : -1);
       strings.forEach((s, si) => {
         const wantFret = shape[si];
         html += `<div class="fb-row"><div class="fb-strandname">${s.label}</div>`;
