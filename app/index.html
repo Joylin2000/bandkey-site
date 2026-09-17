@@ -883,6 +883,10 @@
       animation: slideUp 0.3s ease-out;
     }
     .fullscreen-page.show { display: flex; }
+    /* 导出页：内容超出时允许整页下滚，顶部返回栏吸附顶部 */
+    #exportPage { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    #exportPage .page-nav { position: sticky; top: 0; z-index: 3; background: #fff; }
+    body.dark #exportPage .page-nav { background: #121816; }
     @keyframes slideUp {
       from { transform: translateY(100%); }
       to { transform: translateY(0); }
@@ -5141,7 +5145,36 @@
       return html;
     }
 
-    let exportDraftList = null;     // 由演奏/收藏传入的待导出序列；null=当前和弦+收藏
+    // 导出页和弦卡：与主页/浮窗一致，只显示一个紧凑可弹的单把位和弦按法，仅和弦音、哑音弦用 ×
+    function exportChordFretHtml(pcSet, rootIdx, showLabels) {
+      const strings = FRETBOARD_STRINGS[instrument] || FRETBOARD_STRINGS.bass;
+      const shape = stdChordShape(strings, pcSet, rootIdx >= 0 ? rootIdx : -1, rootIdx >= 0 ? rootIdx : -1);
+      let html = '<div class="fretboard"><div class="fb-head"><div class="fb-corner"></div>';
+      for (let f = 0; f < FRET_COUNT; f++) {
+        html += `<div class="fb-fretno">${f === 0 ? '0' : f}</div>`;
+      }
+      html += '</div>';
+      strings.forEach((s, si) => {
+        const wantFret = shape[si];
+        html += `<div class="fb-row"><div class="fb-strandname">${s.label}</div>`;
+        for (let f = 0; f < FRET_COUNT; f++) {
+          const pc = (s.open + f) % 12;
+          const isRoot = rootIdx >= 0 && pc === rootIdx;
+          const muted = wantFret < 0 && f === 0;
+          const dot = wantFret === f;
+          html += `<div class="fb-fret${f === 0 ? ' fb-nut' : ''}${muted ? ' fb-muted' : ''}">`;
+          if (muted) {
+            html += '<span class="fb-mutedx">×</span>';
+          } else if (dot) {
+            html += `<div class="fb-dot${isRoot ? ' fb-root' : ''}">${showLabels ? `<span>${fretLabelFor(pc)}</span>` : ''}</div>`;
+          }
+          html += '</div>';
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+      return html;
+    }
     let exportKeyRoot = 0;          // 导出页调号选择器当前的根音偏移（0-11）
     const EXPORT_MAJOR = [0, 2, 4, 5, 7, 9, 11];
 
@@ -5225,7 +5258,7 @@
         let keysCls = 'export-card__keys';
         if (instrument !== 'piano') {
           keysCls += ' export-card__keys--fret';
-          keysHtml = exportFretboardHtml(pcSet, rootNoteIdx, true);
+          keysHtml = exportChordFretHtml(pcSet, rootNoteIdx, true);
         } else {
           // 导出琴键：白键带音名，黑键无标注（图二风格，黑键保持纯黑），和弦音统一薄荷绿高亮
           keysCls += ' export-card__keys--fk';
